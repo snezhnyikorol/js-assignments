@@ -8,7 +8,6 @@
  *                                                                                                *
  **************************************************************************************************/
 
-
 /**
  * Returns the rectagle object with width and height parameters and getArea() method
  *
@@ -23,9 +22,11 @@
  *    console.log(r.getArea());   // => 200
  */
 function Rectangle(width, height) {
-    throw new Error('Not implemented');
-}
+  this.width = width;
+  this.height = height;
 
+  this.getArea = () => this.width * this.height;
+}
 
 /**
  * Returns the JSON representation of specified object
@@ -38,9 +39,8 @@ function Rectangle(width, height) {
  *    { width: 10, height : 20 } => '{"height":10,"width":20}'
  */
 function getJSON(obj) {
-    throw new Error('Not implemented');
+  return JSON.stringify(obj);
 }
-
 
 /**
  * Returns the object of specified type from JSON representation
@@ -54,9 +54,10 @@ function getJSON(obj) {
  *
  */
 function fromJSON(proto, json) {
+//   let parsed = JSON.parse(json);
+//   return Object.assign(Object.create(proto), parsed, { getArea: () => {} });
     throw new Error('Not implemented');
 }
-
 
 /**
  * Css selectors builder
@@ -106,41 +107,146 @@ function fromJSON(proto, json) {
  *  For more examples see unit tests.
  */
 
-const cssSelectorBuilder = {
+const cssSelectorBuilder = (() => {
+  class CombinatorTree {
+    constructor(left, combinator, right) {
+      this.left = left;
+      this.combinator = combinator;
+      this.right = right;
+    }
+    stringify() {
+      return `${this.left.stringify()} ${
+        this.combinator
+      } ${this.right.stringify()}`;
+    }
+  }
 
-    element: function(value) {
-        throw new Error('Not implemented');
-    },
+  class CssSelector {
+    constructor() {
+      this.elementName = null;
+      this.idName = null;
+      this.pseudoElementName = null;
+      this.attrList = [];
+      this.classList = [];
+      this.pseudoClassList = [];
+    }
 
-    id: function(value) {
-        throw new Error('Not implemented');
-    },
+    uniquePropertyError() {
+      throw new Error(
+        'Element, id and pseudo-element should not occur more then one time inside the selector'
+      );
+    }
 
-    class: function(value) {
-        throw new Error('Not implemented');
-    },
+    orderingError() {
+      throw new Error(
+        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'
+      );
+    }
 
-    attr: function(value) {
-        throw new Error('Not implemented');
-    },
+    element(value) {
+      if (this.elementName !== null) {
+        this.uniquePropertyError();
+      }
+      if (
+        this.idName !== null ||
+        this.classList.length > 0 ||
+        this.attrList.length > 0 ||
+        this.pseudoClassList.length > 0 ||
+        this.pseudoElementName !== null
+      ) {
+        this.orderingError();
+      }
+      this.elementName = value;
+      return this;
+    }
 
-    pseudoClass: function(value) {
-        throw new Error('Not implemented');
-    },
+    id(value) {
+      if (this.idName !== null) {
+        this.uniquePropertyError();
+      }
+      if (
+        this.classList.length > 0 ||
+        this.attrList.length > 0 ||
+        this.pseudoClassList.length > 0 ||
+        this.pseudoElementName !== null
+      ) {
+        this.orderingError();
+      }
+      this.idName = value;
+      return this;
+    }
 
-    pseudoElement: function(value) {
-        throw new Error('Not implemented');
-    },
+    class(value) {
+      if (
+        this.attrList.length > 0 ||
+        this.pseudoClassList.length > 0 ||
+        this.pseudoElementName !== null
+      ) {
+        this.orderingError();
+      }
+      this.classList.push(value);
+      return this;
+    }
 
-    combine: function(selector1, combinator, selector2) {
-        throw new Error('Not implemented');
-    },
-};
+    attr(value) {
+      if (this.pseudoClassList.length > 0 || this.pseudoElementName !== null) {
+        this.orderingError();
+      }
+      this.attrList.push(value);
+      return this;
+    }
 
+    pseudoClass(value) {
+      if (this.pseudoElementName !== null) {
+        this.orderingError();
+      }
+      this.pseudoClassList.push(value);
+      return this;
+    }
+
+    pseudoElement(value) {
+      if (this.pseudoElementName !== null) {
+        this.uniquePropertyError();
+      }
+      this.pseudoElementName = value;
+      return this;
+    }
+
+    stringify() {
+      let s = this.elementName || '';
+
+      if (this.idName) {
+        s += `#${this.idName}`;
+      }
+
+      this.classList.forEach(className => (s += `.${className}`));
+      this.attrList.forEach(attrName => (s += `[${attrName}]`));
+      this.pseudoClassList.forEach(
+        pseudoClassName => (s += `:${pseudoClassName}`)
+      );
+
+      if (this.pseudoElementName) {
+        s += `::${this.pseudoElementName}`;
+      }
+
+      return s;
+    }
+  }
+
+  return {
+    element: value => new CssSelector().element(value),
+    id: value => new CssSelector().id(value),
+    class: value => new CssSelector().class(value),
+    attr: value => new CssSelector().attr(value),
+    pseudoClass: value => new CssSelector().pseudoClass(value),
+    pseudoElement: value => new CssSelector().pseudoElement(value),
+    combine: (...args) => new CombinatorTree(...args)
+  };
+})();
 
 module.exports = {
-    Rectangle: Rectangle,
-    getJSON: getJSON,
-    fromJSON: fromJSON,
-    cssSelectorBuilder: cssSelectorBuilder
+  Rectangle: Rectangle,
+  getJSON: getJSON,
+  fromJSON: fromJSON,
+  cssSelectorBuilder: cssSelectorBuilder
 };

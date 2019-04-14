@@ -22,7 +22,7 @@
  *    'Sun, 17 May 1998 03:00:00 GMT+01' => Date()
  */
 function parseDataFromRfc2822(value) {
-   throw new Error('Not implemented');
+   return new Date(value);
 }
 
 /**
@@ -37,7 +37,7 @@ function parseDataFromRfc2822(value) {
  *    '2016-01-19T08:07:37Z' => Date()
  */
 function parseDataFromIso8601(value) {
-   throw new Error('Not implemented');
+   return new Date(value);
 }
 
 
@@ -56,7 +56,10 @@ function parseDataFromIso8601(value) {
  *    Date(2015,1,1)    => false
  */
 function isLeapYear(date) {
-   throw new Error('Not implemented');
+   if (date.getFullYear() % 4 != 0) return false;
+   else if (date.getFullYear() %  100 != 0) return true;
+   else if (date.getFullYear() % 400 != 0) return false;
+   else return true;
 }
 
 
@@ -76,12 +79,12 @@ function isLeapYear(date) {
  *    Date(2000,1,1,10,0,0),  Date(2000,1,1,15,20,10,453)   => "05:20:10.453"
  */
 function timeSpanToString(startDate, endDate) {
-   throw new Error('Not implemented');
+   return new Date(endDate - startDate).toISOString().slice(11, -1);
 }
 
 
 /**
- * Returns the angle (in radians) between the hands of an analog clock for the specified Greenwich time.
+ * Returns enwthe angle (in radians) between the hands of an analog clock for the specified Greich time.
  * If you have problem with solution please read: https://en.wikipedia.org/wiki/Clock_angle_problem
  * 
  * @param {date} date
@@ -93,8 +96,10 @@ function timeSpanToString(startDate, endDate) {
  *    Date.UTC(2016,3,5,18, 0) => Math.PI
  *    Date.UTC(2016,3,5,21, 0) => Math.PI/2
  */
-function angleBetweenClockHands(date) {
-    throw new Error('Not implemented');
+ function angleBetweenClockHands(date) {
+   // var angle = Math.abs(date.getMinutes() * Math.PI / 30 - (date.getHours() % 12 + date.getMinutes() / 60) * Math.PI / 6);
+   // return angle > Math.PI ? 2 * Math.PI - angle : angle;
+   throw new Error('Not implemented');
 }
 
 
